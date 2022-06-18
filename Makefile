@@ -33,3 +33,11 @@ _build/implementations/purescript/bundle.js:
 	[ $$(node -p "require('big-integer/package.json').version") != "1.6.51" ] && \
 		npm install big-integer@1.6.51
 	spago bundle-module -t ../../$@
+
+implementations/idris2/build/exec/main.js:
+	cd implementations/idris2
+	idris2 --build fp-perf-mos6502-idris2.ipkg
+
+_build/implementations/idris2/main.js: implementations/idris2/build/exec/main.js
+	mkdir -p $(dir $@)
+	cp -f $< $@

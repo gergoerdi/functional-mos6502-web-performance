@@ -1,0 +1,15 @@
+package fp-perf-mos6502-idris2
+
+sourcedir = "src"
+
+depends
+    = base         >= 0.5.1
+    , contrib      >= 0.5.1
+    , dom          >= 0.1.0
+    , elab-util    >= 0.5.0
+    , sop          >= 0.5.0
+    , tailrec      >= 0.1.0
+
+executable = "main.js"
+main = Main
+opts = "--codegen javascript"

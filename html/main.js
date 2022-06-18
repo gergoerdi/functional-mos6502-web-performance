@@ -9,6 +9,10 @@ let measure = (label, act) => {
 
 import('./implementations/purescript/bundle.js').then(mod => {
     timeIt = () => {
-        measure("PureScript", mod.run(fn => () => files[fn]));
+        measure("PureScript", mod.run(fn => () => files[fn].slice()));
     };
 });
+
+let idris2 = () => {
+    measure("idris2", () => idris2_run(fn => w => files[fn].slice()));
+}

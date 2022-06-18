@@ -1,5 +1,7 @@
 HTML_FILES	= index.html base64.js main.js
 
+.ONESHELL:
+
 all: $(patsubst %, _build/%, $(HTML_FILES)) _build/files.js
 
 _build/index.html: html/index.html
@@ -25,3 +27,9 @@ _build/files.js: data/program.dat
 	echo "};"; \
 	) > $@
 
+_build/implementations/purescript/bundle.js:
+	mkdir -p $(dir $@)
+	cd implementations/purescript
+	[ $$(node -p "require('big-integer/package.json').version") != "1.6.51" ] && \
+		npm install big-integer@1.6.51
+	spago bundle-module -t ../../$@

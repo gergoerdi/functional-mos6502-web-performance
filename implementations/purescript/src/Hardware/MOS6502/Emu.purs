@@ -408,7 +408,7 @@ step = fetch >>= \op -> case fromIntegral op of -- http://www.6502.org/tutorials
         when (testBit 7 extended /= (testBit 7 v1 && testBit 7 v2)) do
             setFlag overflow true
 
-        setFlag carry $ extended <= fromIntegral 0x100
+        setFlag carry $ extended >= fromIntegral 0x100
         setFlag zero $ extended .&. fromIntegral 0xff == fromIntegral 0
         setFlag negative $ testBit 7 extended
         pure $ fromIntegral extended

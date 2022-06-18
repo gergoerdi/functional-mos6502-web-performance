@@ -1,4 +1,5 @@
-var timeIt;
+var purs;
+var js;
 
 let measure = (label, act) => {
     let before = +new Date();
@@ -8,11 +9,17 @@ let measure = (label, act) => {
 };
 
 import('./implementations/purescript/bundle.js').then(mod => {
-    timeIt = () => {
+    purs = () => {
         measure("PureScript", mod.run(fn => () => files[fn].slice()));
     };
 });
 
 let idris2 = () => {
-    measure("idris2", () => idris2_run(fn => w => files[fn].slice()));
+    measure("Idris2", () => idris2_run(fn => w => files[fn].slice()));
 }
+
+import('./implementations/js/mos6502.js').then(mod => {
+    js = () => {
+        measure("Javascript", mod.run(fn => () => files[fn].slice()));
+    };
+});

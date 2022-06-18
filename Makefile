@@ -1,8 +1,9 @@
 HTML_FILES	= index.html base64.js main.js
+IMPLS		= purescript/bundle.js idris2/main.js js/mos6502.js
 
 .ONESHELL:
 
-all: $(patsubst %, _build/%, $(HTML_FILES)) _build/files.js
+all: $(patsubst %, _build/%, $(HTML_FILES)) _build/files.js $(patsubst %,_build/implementations/%, $(IMPLS))
 
 _build/index.html: html/index.html
 	mkdir -p _build
@@ -39,5 +40,9 @@ implementations/idris2/build/exec/main.js:
 	idris2 --build fp-perf-mos6502-idris2.ipkg
 
 _build/implementations/idris2/main.js: implementations/idris2/build/exec/main.js
+	mkdir -p $(dir $@)
+	cp -f $< $@
+
+_build/implementations/js/mos6502.js: implementations/js/mos6502.js
 	mkdir -p $(dir $@)
 	cp -f $< $@

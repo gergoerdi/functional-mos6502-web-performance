@@ -50,22 +50,6 @@ new pc0 = pure $ MkCPU
   , pc     = !(newIORef pc0)
   }
 
-fetch : Machine => (cpu : CPU) => IO Byte
-fetch = do
-  addr <- readIORef cpu.pc
-  writeIORef cpu.pc (addr + 1)
-  readMem addr
-
-public export
-toAddr : Byte -> Byte -> Addr
-toAddr lo hi = (cast hi) `shiftL` 8 .|. cast lo
-
-fetchAddr : Machine => CPU => IO Addr
-fetchAddr = toAddr <$> fetch <*> fetch
-
-readMemAddr : Machine => Addr -> IO Addr
-readMemAddr addr = toAddr <$> readMem addr <*> readMem (addr + 1)
-
 0 Reg8 : Type
 Reg8 = CPU -> IORef Byte
 
@@ -82,6 +66,19 @@ modifyReg reg f = do
   v <- getReg reg
   setReg reg $ f v
   pure v
+
+fetch : Machine => (cpu : CPU) => IO Byte
+fetch = readMem =<< modifyReg pc (+ 1)
+
+public export
+toAddr : Byte -> Byte -> Addr
+toAddr lo hi = (cast hi) `shiftL` 8 .|. cast lo
+
+fetchAddr : Machine => CPU => IO Addr
+fetchAddr = toAddr <$> fetch <*> fetch
+
+readMemAddr : Machine => Addr -> IO Addr
+readMemAddr addr = toAddr <$> readMem addr <*> readMem (addr + 1)
 
 push : Machine => CPU => Byte -> IO ()
 push v = do

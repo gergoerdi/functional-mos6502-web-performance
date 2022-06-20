@@ -1,9 +1,9 @@
 export function run(loadFile) {
     return function() {
-        let mem = new DataView(loadFile("data/program.dat")());
-        let cpu = newCPU(0x438b);
+        const mem = new DataView(loadFile("data/program.dat")());
+        const cpu = newCPU(0x438b);
 
-        let r = {
+        const r = {
             cpu: cpu,
             readMem: addr => mem.getUint8(addr),
             writeMem: (addr, v) => mem.setUint8(addr, v)
@@ -27,43 +27,43 @@ function newCPU(pc) {
 }
     
 function fetch(r) {
-    let addr = r.cpu.pc;
+    const addr = r.cpu.pc;
     r.cpu.pc = (addr + 1) & 0xffff;
     return r.readMem(addr);
 }
 
-let toAddr = (lo, hi) => (hi << 8 | lo);
+const toAddr = (lo, hi) => (hi << 8 | lo);
 
-let fetchAddr = r => toAddr(fetch(r), fetch(r));
+const fetchAddr = r => toAddr(fetch(r), fetch(r));
 
-let readMemAddr = (r, addr) => toAddr(r.readMem(addr), r.readMem((addr + 1) & 0xffff) );
+const readMemAddr = (r, addr) => toAddr(r.readMem(addr), r.readMem((addr + 1) & 0xffff) );
 
-let push = (r,v) => {
-    let ptr = r.cpu.sp;
+const push = (r,v) => {
+    const ptr = r.cpu.sp;
     r.writeMem((0x100 + ptr) & 0xffff, v);
     r.cpu.sp = (ptr - 1) & 0xff;
 };
 
-let pushAddr = (r,addr) => {
-    let hi = addr >> 8;
-    let lo = addr & 0xff;
+const pushAddr = (r,addr) => {
+    const hi = addr >> 8;
+    const lo = addr & 0xff;
     push(r,hi);
     push(r,lo);
 };
 
-let pop = r => {
-    let ptr = r.cpu.sp;
-    let v = r.readMem(0x100 + ((ptr + 1) & 0xff));
+const pop = r => {
+    const ptr = r.cpu.sp;
+    const v = r.readMem(0x100 + ((ptr + 1) & 0xff));
     r.cpu.sp = (ptr + 1) & 0xff;
     return v;
 };
 
-let popAddr = r => toAddr(pop(r), pop(r));
+const popAddr = r => toAddr(pop(r), pop(r));
 
 var cnt = 0;
 
 
-let getFlag = (r, flag) => (r.cpu.status & flag) != 0;
+const getFlag = (r, flag) => (r.cpu.status & flag) != 0;
 
 function setFlag(r, flag, b) {
     if (b) {
@@ -73,47 +73,47 @@ function setFlag(r, flag, b) {
     }
 }
 
-let statusFlag = (i) => 0x01 << i;
+const statusFlag = (i) => 0x01 << i;
 
-let carry = statusFlag(0);
-let zero = statusFlag(1);
-let interruptEnable = statusFlag(2);
-let decimal = statusFlag(3);
-let overflow = statusFlag(6);
-let negative = statusFlag(7);
+const carry = statusFlag(0);
+const zero = statusFlag(1);
+const interruptEnable = statusFlag(2);
+const decimal = statusFlag(3);
+const overflow = statusFlag(6);
+const negative = statusFlag(7);
 
 function step(r) {
-    let imm = op => op(fetch(r));
-    let byVal = (addressing,op) => op(r.readMem(addressing()));
-    let byRef = (addressing,op) => op(addressing());
-    let inplace = (addressing,op) => byRef(addressing, addr => r.writeMem(addr, op(r.readMem(addr))));
-    let implied = (reg,op) => r.cpu[reg] = op(r.cpu[reg]) & 0xff;
+    const imm = op => op(fetch(r));
+    const byVal = (addressing,op) => op(r.readMem(addressing()));
+    const byRef = (addressing,op) => op(addressing());
+    const inplace = (addressing,op) => byRef(addressing, addr => r.writeMem(addr, op(r.readMem(addr))));
+    const implied = (reg,op) => r.cpu[reg] = op(r.cpu[reg]) & 0xff;
 
-    let zp_ = (offset) => () => (fetch(r) + offset) & 0xffff;
-    let abs_ = (offset) => () => fetchAddr(r) + offset;
+    const zp_ = (offset) => () => (fetch(r) + offset) & 0xffff;
+    const abs_ = (offset) => () => fetchAddr(r) + offset;
 
-    let zp = zp_(0);
-    let abs = abs_(0);
-    let absX = abs_(r.cpu.regX);
-    let absY = abs_(r.cpu.regY);
+    const zp = zp_(0);
+    const abs = abs_(0);
+    const absX = abs_(r.cpu.regX);
+    const absY = abs_(r.cpu.regY);
 
-    let xInd = () => {
-        let z = fetch(r);
-        let offset = r.cpu.regX;
-        let ref = (z + offset) & 0xffff;
+    const xInd = () => {
+        const z = fetch(r);
+        const offset = r.cpu.regX;
+        const ref = (z + offset) & 0xffff;
         return readMemAddr(r, ref);
     };
 
-    let indY = () => {
-        let z = fetch(r);
-        let offset = r.cpu.regY;
-        let base = readMemAddr(r, z);
+    const indY = () => {
+        const z = fetch(r);
+        const offset = r.cpu.regY;
+        const base = readMemAddr(r, z);
         return (base + offset) & 0xffff;
     };
 
-    let signed = (f, v1, v2) => {
-        let c0 = getFlag(r,carry);
-        let result = f(v1, v2, c0);
+    const signed = (f, v1, v2) => {
+        const c0 = getFlag(r,carry);
+        const result = f(v1, v2, c0);
         // TODO: BCD
 
         if ((result & 0x80) != (v1 & v2) & 0x80) {
@@ -125,14 +125,14 @@ function step(r) {
         return (result & 0xff);
     };
 
-    let adc = v => {
-        let a = r.cpu.regA;
+    const adc = v => {
+        const a = r.cpu.regA;
         r.cpu.regA = signed((v1, v2, c0) => v1 + v2 + (c0 ? 1 : 0), a, v);
     };
 
-    let sub = (v1, v2) => {
-        let c0 = getFlag(r,carry);
-        let extended = (v1 - v2 - (c0 ? 0 : 1)) & 0xffff; // TODO: BCD
+    const sub = (v1, v2) => {
+        const c0 = getFlag(r,carry);
+        const extended = (v1 - v2 - (c0 ? 0 : 1)) & 0xffff; // TODO: BCD
         if ((extended & 0x80) != ((v1 & 0x80) & (v2 & 0x80))) {
             setFlag(r,overflow, true);
         }
@@ -143,51 +143,51 @@ function step(r) {
         return (extended & 0xff);
     };
     
-    let cmp = a => v => {
+    const cmp = a => v => {
         setFlag(r,carry,true);
         sub(a,v);
     };
     
-    let sbc = v => {
+    const sbc = v => {
         r.cpu.regA = sub(r.cpu.regA, v);
     };
     
-    let alu = f => a => {
-        let result = f(a);
+    const alu = f => a => {
+        const result = f(a);
 
         setFlag(r, zero, (result & 0xff) == 0x00);
         setFlag(r, negative, (result & 0x80) != 0x00);
         return result;
     };
 
-    let and = v => r.cpu.regA = alu(x => x & v)(r.cpu.regA);
-    let eor = v => r.cpu.regA = alu(x => x ^ v)(r.cpu.regA);
-    let ora = v => r.cpu.regA = alu(x => x | v)(r.cpu.regA);
+    const and = v => r.cpu.regA = alu(x => x & v)(r.cpu.regA);
+    const eor = v => r.cpu.regA = alu(x => x ^ v)(r.cpu.regA);
+    const ora = v => r.cpu.regA = alu(x => x | v)(r.cpu.regA);
 
-    let shiftRot = f => v => {
-        let c = getFlag(r,carry);
-        let cv = f(c,v);
+    const shiftRot = f => v => {
+        const c = getFlag(r,carry);
+        const cv = f(c,v);
         setFlag(r, carry, cv.c);
         setFlag(r, zero, (cv.v & 0xff) == 0);
         setFlag(r, negative, (cv.v & 0x80) != 0x00);
         return cv.v;       
     };
 
-    let asl = shiftRot((c,v) => ({ c: v & 0x80, v: ((v << 1) & 0xff) }));
-    let lsr = shiftRot((c,v) => ({ c: v & 0x01, v: ((v >> 1) & 0xff) }));
-    let rol = shiftRot((c,v) => ({ c: v & 0x80, v: (((v << 1) & 0xff) | (c ? 0x01 : 0x000)) }));
-    let ror = shiftRot((c,v) => ({ c: v & 0x01, v: (((v >> 1) & 0xff) | (c ? 0x80 : 0x00)) }));
+    const asl = shiftRot((c,v) => ({ c: v & 0x80, v: ((v << 1) & 0xff) }));
+    const lsr = shiftRot((c,v) => ({ c: v & 0x01, v: ((v >> 1) & 0xff) }));
+    const rol = shiftRot((c,v) => ({ c: v & 0x80, v: (((v << 1) & 0xff) | (c ? 0x01 : 0x000)) }));
+    const ror = shiftRot((c,v) => ({ c: v & 0x01, v: (((v >> 1) & 0xff) | (c ? 0x80 : 0x00)) }));
 
-    let bit = v => {
-        let a = r.cpu.regA;
+    const bit = v => {
+        const a = r.cpu.regA;
         setFlag(r, zero, (a & v) == 0);
         setFlag(r, negative, (v & 0x80) != 0);
         setFlag(r, overflow, (v & 0x40) != 0);
     };
 
-    let br = (flag, target) => {
-        let offset = fetch(r) & 0xff;
-        let b = getFlag(r, flag);
+    const br = (flag, target) => {
+        const offset = fetch(r) & 0xff;
+        const b = getFlag(r, flag);
         if (b == target) {
             // console.log("Branch taken from " + (r.cpu.pc - 2).toString(16));
             r.cpu.pc =
@@ -196,30 +196,30 @@ function step(r) {
         }
     };
 
-    let dec = alu(v => (v - 1) & 0xff);
-    let inc = alu(v => (v + 1) & 0xff);
+    const dec = alu(v => (v - 1) & 0xff);
+    const inc = alu(v => (v + 1) & 0xff);
     
-    let load = reg => v => {
+    const load = reg => v => {
         setFlag(r, zero, (v & 0xff) == 0x00);
         setFlag(r, negative, (v & 0x80) != 0x00);
         r.cpu[reg] = v;
     };
-    let store = reg => addr => {
+    const store = reg => addr => {
         // console.log("store", addr, reg, r.cpu, r.cpu[reg]);
         r.writeMem(addr, r.cpu[reg]);
     };
-    let jsr = addr => {
-        let curr = r.cpu.pc;
+    const jsr = addr => {
+        const curr = r.cpu.pc;
         pushAddr(r, (curr - 1) & 0xffff);
         r.cpu.pc = addr;
     };
-    let transfer = (from, to) => {
-        let v = r.cpu[from];
+    const transfer = (from, to) => {
+        const v = r.cpu[from];
         r.cpu[to] = alu(() => 0)(0);
     };
 
     // console.log(r.cpu.pc.toString(16), r.cpu);
-    let op = fetch(r);
+    const op = fetch(r);
     switch (op) {
     case 0x69: imm(adc); break;
     case 0x65: byVal(zp,adc); break;
@@ -406,7 +406,7 @@ function step(r) {
     };
 };
 
-let rts = r => {
-    let addr = popAddr(r);
+const rts = r => {
+    const addr = popAddr(r);
     r.cpu.pc = (addr + 1) & 0xffff;
 };

@@ -6,6 +6,11 @@ import Hardware.MOS6502.Emu
 import Asterius.Types
 import Data.Coerce
 
+import Asterius.ByteString
+import qualified Data.Vector.Storable as V
+import qualified Data.Vector.Storable.Mutable as V
+import qualified Data.ByteString as BS
+
 import Data.Word
 import Control.Monad.Reader
 import System.FilePath
@@ -14,20 +19,18 @@ import Text.Printf
 newtype JSArrayBuffer = JSArrayBuffer JSVal
 
 foreign import javascript "new Uint8Array($1)" js_toUint8Array :: JSArrayBuffer -> IO JSUint8Array
-foreign import javascript "$1[$2]" js_readArr :: JSUint8Array -> Int -> IO Int
-foreign import javascript "$1[$2] = $3" js_writeArr :: JSUint8Array -> Int -> Int -> IO ()
 
-newtype Memory m a = Memory{ runMemory :: ReaderT JSUint8Array m a }
+newtype Memory m a = Memory{ runMemory :: ReaderT (V.IOVector Byte) m a }
     deriving newtype (Functor, Applicative, Monad, MonadIO)
 
 instance (MonadIO m) => MonadMachine (Memory m) where
     readMem addr = Memory $ do
         mem <- ask
-        liftIO $ fromIntegral <$> js_readArr mem (fromIntegral addr)
+        liftIO $ V.read mem (fromIntegral addr)
 
     writeMem addr v = Memory $ do
         mem <- ask
-        liftIO $ js_writeArr mem (fromIntegral addr) (fromIntegral v)
+        liftIO $ V.write mem (fromIntegral addr) (fromIntegral v)
 
 {-# INLINEABLE callJSFunction #-}
 callJSFunction :: JSVal -> [JSVal] -> IO JSVal
@@ -44,7 +47,10 @@ loadFile (JSFileLoader f) fp = coerce $ callJSFunction f [coerce $ toJSString fp
 foreign export javascript "run" run :: JSFileLoader -> IO Int
 run :: JSFileLoader -> IO Int
 run fileLoader = do
-    mem <- js_toUint8Array =<< readFile "data/program.dat"
+    arr <- js_toUint8Array =<< readFile "data/program.dat"
+    let bs = byteStringFromJSUint8Array arr
+    mem <- V.new 0x10000
+    zipWithM_ (V.write mem) [0x0000..] (BS.unpack bs)
 
     cpu <- new 0x438b
     let runCPU = flip runReaderT mem . runMemory . flip runReaderT cpu

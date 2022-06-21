@@ -1,8 +1,8 @@
 let implementations = {};
 
-function measure(label, act) {
+async function measure(label, act) {
     const before = +new Date();
-    const cnt = act();
+    const cnt = await act();
     const after = +new Date();
     if (cnt != 4142) throw { label: label, cnt: cnt };
 
@@ -11,18 +11,18 @@ function measure(label, act) {
     return time;
 };
 
-function measureAll() {
-    const numRuns = 100;
-    const numWarmup = 10;
+async function measureAll() {
+    const numRuns = 20;
+    const numWarmup = 5;
 
     for (const [label, act] of Object.entries(implementations)) {
         for (let i = 0; i < numWarmup; ++i) {
-            measure(label, act);
+            await measure(label, act);
         }
 
         let times = [];
         for (let i = 0; i < numRuns; ++i) {
-            times.push(measure(label, act));
+            times.push(await measure(label, act));
         }
 
         let minTime = null, sumTime = 0, maxTime = null;
@@ -45,14 +45,14 @@ async function setup()
 {
     {
         const mod = await import("./implementations/purescript/bundle.js");
-        implementations["PureScript"] = () => mod.run(fn => () => files[fn].slice())();
+        implementations["PureScript"] = async () => mod.run(fn => () => files[fn].slice())();
     }
 
-    implementations["Idris2"] = () => idris2_run(fn => w => files[fn].slice());
+    implementations["Idris2"] = async () => idris2_run(fn => w => files[fn].slice());
 
     {
         const mod = await import("./implementations/js/mos6502.js");
-        implementations["JavaScript"] = () => mod.run(fn => () => files[fn].slice())();
+        implementations["JavaScript"] = async () => mod.run(fn => () => files[fn].slice())();
     }
 }
 

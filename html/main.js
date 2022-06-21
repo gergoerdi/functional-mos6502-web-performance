@@ -54,6 +54,12 @@ async function setup()
         const mod = await import("./implementations/js/mos6502.js");
         implementations["JavaScript"] = async () => mod.run(fn => () => files[fn].slice())();
     }
+
+    {
+        const mod = await import("../implementations/asterius/_build/Driver.mjs");
+        const run = await mod.setup();
+        implementations["GHC-Asterius"] = async () => await run(fn => files[fn].slice());
+    }
 }
 
 setup().then({});

@@ -46,3 +46,19 @@ _build/implementations/idris2/main.js: implementations/idris2/build/exec/main.js
 _build/implementations/js/mos6502.js: implementations/js/mos6502.js
 	mkdir -p $(dir $@)
 	cp -f $< $@
+
+implementations/asterius/_build/Driver.wasm:
+	cd implementations/asterius
+	mkdir -p _build
+	docker run -it --rm -v $(shell readlink -f implementations/asterius):/workspace -w /workspace terrorjack/asterius \
+	  ahc-link --browser \
+	    --input-hs src/Driver.hs \
+	    --ghc-option "-O2" \
+	    --export-function run \
+	    --input-mjs index.js --no-main \
+	    --output-directory _build
+
+
+_build/Driver.wasm: implementations/asterius/_build/Driver.wasm
+	mkdir -p $(dir $@)
+	cp -f $< $@

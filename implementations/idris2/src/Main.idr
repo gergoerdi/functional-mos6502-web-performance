@@ -42,8 +42,8 @@ untilIO acc0 step = fromPrim $ go acc0
             | MkIORes (Right res) w' => MkIORes res w'
       in go acc' w'
 
-single : Machine => CPU => (String -> IO ArrayBuffer) -> IO (Maybe ())
-single loadFile = do
+single : Machine => CPU => IO (Maybe ())
+single = do
   getReg pc >>= \pc' => do
     case pc' of
       0x640b => pure $ Just ()
@@ -53,15 +53,15 @@ single loadFile = do
 
 %nomangle
 public export
-idris2_run : (String -> IO ArrayBuffer) -> IO Nat
-idris2_run loadFile = do
-  mem <- arrayDataFrom . cast {to = UInt8Array} =<< loadFile "data/program.dat"
+idris2_run : ArrayBuffer -> IO Nat
+idris2_run buf = do
+  mem <- arrayDataFrom . cast {to = UInt8Array} $ buf
 
   cpu <- new 0x438b
   let m = toMachine mem
 
   untilIO 0 $ \cnt => do
-    Nothing <- single loadFile
+    Nothing <- single
       | Just _ => pure $ Right cnt
     pure $ Left $ cnt + 1
 

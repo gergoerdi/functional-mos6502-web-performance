@@ -32,22 +32,10 @@ instance (MonadIO m) => MonadMachine (Memory m) where
         mem <- ask
         liftIO $ V.write mem (fromIntegral addr) (fromIntegral v)
 
-{-# INLINEABLE callJSFunction #-}
-callJSFunction :: JSVal -> [JSVal] -> IO JSVal
-callJSFunction f args = js_function_apply f js_object_empty (toJSArray args)
-
-foreign import javascript "{}" js_object_empty :: JSVal
-foreign import javascript "$1.apply($2, $3)" js_function_apply :: JSVal -> JSVal -> JSArray -> IO JSVal
-
-newtype JSFileLoader = JSFileLoader JSVal
-
-loadFile :: JSFileLoader -> FilePath -> IO JSArrayBuffer
-loadFile (JSFileLoader f) fp = coerce $ callJSFunction f [coerce $ toJSString fp]
-
-foreign export javascript "run" run :: JSFileLoader -> IO Int
-run :: JSFileLoader -> IO Int
-run fileLoader = do
-    arr <- js_toUint8Array =<< readFile "data/program.dat"
+foreign export javascript "run" run :: JSArrayBuffer -> IO Int
+run :: JSArrayBuffer -> IO Int
+run buf = do
+    arr <- js_toUint8Array buf
     let bs = byteStringFromJSUint8Array arr
     mem <- V.new 0x10000
     zipWithM_ (V.write mem) [0x0000..] (BS.unpack bs)
@@ -59,5 +47,3 @@ run fileLoader = do
             0x640b -> pure cnt
             pc -> step >> loop (cnt + 1)
     runCPU $ loop 0
-  where
-    readFile = loadFile fileLoader

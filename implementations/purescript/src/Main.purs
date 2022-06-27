@@ -52,9 +52,9 @@ instance MonadEffect m => MonadMachine (Memory m) where
 runMemory :: forall m a. Memory m a -> ReaderT (DataView) m a
 runMemory (Memory act) = act
 
-run :: (String -> Effect ArrayBuffer) -> Effect Int
-run loadFile = do
-    mem <- Arr.whole <$> loadFile "data/program.dat"
+run :: ArrayBuffer -> Effect Int
+run buf = do
+    let mem = Arr.whole buf
 
     cpu <- new $ fromIntegral 0x438b
     let runCPU :: forall a. ReaderT CPU (Memory Effect) a -> Effect a

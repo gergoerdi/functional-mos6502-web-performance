@@ -1,6 +1,6 @@
-export function run(loadFile) {
+export function run(buf) {
     return function() {
-        const mem = new DataView(loadFile("data/program.dat")());
+        const mem = new DataView(buf);
         const cpu = newCPU(0x438b);
 
         const r = {

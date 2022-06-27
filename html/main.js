@@ -43,22 +43,24 @@ async function measureAll() {
 
 async function setup()
 {
-    {
-        const mod = await import("./implementations/purescript/bundle.js");
-        implementations["PureScript"] = async () => mod.run(fn => () => files[fn].slice())();
-    }
-
-    implementations["Idris2"] = async () => idris2_run(fn => w => files[fn].slice());
+    const buf = files["data/program.dat"];
 
     {
         const mod = await import("./implementations/js/mos6502.js");
-        implementations["JavaScript"] = async () => mod.run(fn => () => files[fn].slice())();
+        implementations["JavaScript"] = async () => mod.run(buf.slice())();
+    }
+
+    implementations["Idris2"] = async () => idris2_run(buf.slice());
+
+    {
+        const mod = await import("./implementations/purescript/bundle.js");
+        implementations["PureScript"] = async () => mod.run(buf.slice())();
     }
 
     {
         const mod = await import("../implementations/asterius/_build/Driver.mjs");
         const run = await mod.setup();
-        implementations["GHC-Asterius"] = async () => await run(fn => files[fn].slice());
+        implementations["GHC-Asterius"] = async () => await run(buf.slice());
     }
 }
 

@@ -2,35 +2,18 @@ module Main
 
 import Hardware.MOS6502.Emu
 
-import Data.Maybe
-import Data.String
+import Data.Array.Fast
 
 import JS.Buffer
 import JS.Array
-import JS.Util
-
--- reads a value at the given index from a byte array
--- I reimplemented this here, because the version from
--- the dom library returns a Maybe (something we don't need
--- here), and has a call to `<$>`, which will conjure a
--- Monad IO record (something I should fix).
-%foreign "javascript:lambda:(arr,n,w) => arr[n]"
-prim__readArr : Array Byte -> Bits32 -> PrimIO Byte
-
--- writes a value to a mutable array
-%foreign "javascript:lambda:(arr,n,v,w) => { arr[n] = v }"
-prim__writeArr : Array Byte -> Bits32 -> Byte -> PrimIO ()
 
 0 Memory : Type
 Memory = Array Byte
 
-readMemory : Memory -> Addr -> IO Byte
-readMemory mem addr = fromPrim $ prim__readArr mem (cast addr)
-
 toMachine : Memory -> Machine
 toMachine mem = MkMachine
-  { readMem_  = \addr => readMemory mem addr
-  , writeMem_ = \addr => writeIO mem (cast addr)
+  { readMem_  = \addr => readArray mem (cast addr)
+  , writeMem_ = \addr => writeArray mem (cast addr)
   }
 
 untilIO : acc -> (acc -> IO (Either acc a)) -> IO a

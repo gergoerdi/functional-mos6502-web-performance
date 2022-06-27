@@ -14,7 +14,7 @@ async function measure(label, act) {
 };
 
 async function measureAll() {
-    const numRuns = 20;
+    const numRuns = 200;
     const numWarmup = 5;
 
     for (const [label, act] of Object.entries(implementations)) {
@@ -24,6 +24,9 @@ async function measureAll() {
 
         let times = [];
         for (let i = 0; i < numRuns; ++i) {
+            if (i % 20 == 0) {
+                console.log("Running " + label + "...");
+            }
             times.push(await measure(label, act));
         }
 

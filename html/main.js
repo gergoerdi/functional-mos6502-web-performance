@@ -1,8 +1,10 @@
 let implementations = {};
 
 async function measure(label, act) {
+    const buf = files["data/program.dat"].slice();
+
     const before = +new Date();
-    const cnt = await act();
+    const cnt = await act(buf);
     const after = +new Date();
     if (cnt != 4142) throw { label: label, cnt: cnt };
 
@@ -43,24 +45,22 @@ async function measureAll() {
 
 async function setup()
 {
-    const buf = files["data/program.dat"];
-
     {
         const mod = await import("./implementations/js/mos6502.js");
-        implementations["JavaScript"] = async () => mod.run(buf.slice())();
+        implementations["JavaScript"] = async buf => mod.run(buf)();
     }
 
-    implementations["Idris2"] = async () => idris2_run(buf.slice());
+    implementations["Idris2"] = async buf => idris2_run(buf);
 
     {
         const mod = await import("./implementations/purescript/bundle.js");
-        implementations["PureScript"] = async () => mod.run(buf.slice())();
+        implementations["PureScript"] = async buf => mod.run(buf)();
     }
 
     {
         const mod = await import("../implementations/asterius/_build/Driver.mjs");
         const run = await mod.setup();
-        implementations["GHC-Asterius"] = async () => await run(buf.slice());
+        implementations["GHC-Asterius"] = async buf => await run(buf);
     }
 }
 

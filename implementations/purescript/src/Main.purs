@@ -5,7 +5,7 @@ import Hardware.MOS6502.Emu
 import Prelude
 import Data.Integral (fromIntegral)
 import Data.Maybe (Maybe(..), fromJust)
-import Data.UInt (fromInt, toInt)
+import Data.UInt (UInt, fromInt, toInt)
 import Partial.Unsafe (unsafePartial)
 
 import Control.Monad.Reader.Class
@@ -15,10 +15,10 @@ import Control.Monad.Rec.Class
 
 import Effect (Effect)
 import Effect.Class (class MonadEffect, liftEffect)
-import Data.ArrayBuffer.Types (ArrayBuffer, ArrayView, Uint8, DataView, ByteOffset)
-import Data.ArrayBuffer.DataView as Arr
+import Data.ArrayBuffer.Types (ArrayBuffer, ArrayView, Uint8)
+import Data.ArrayBuffer.Typed as Arr
 
-newtype Memory m a = Memory (ReaderT (DataView) m a)
+newtype Memory m a = Memory (ReaderT (ArrayView Uint8) m a)
 
 instance Functor m => Functor (Memory m) where
     map f = Memory <<< map f <<< runMemory
@@ -40,21 +40,23 @@ instance MonadRec m => MonadRec (Memory m) where
 instance MonadEffect m => MonadEffect (Memory m) where
     liftEffect act = Memory $ liftEffect act
 
+foreign import writeArray :: ArrayView Uint8 -> Arr.Index -> UInt -> Effect Unit
+
 instance MonadEffect m => MonadMachine (Memory m) where
     readMem addr = unsafePartial do
         mem <- Memory ask
-        liftEffect $ fromIntegral <<< toInt <<< fromJust <$> Arr.getUint8 mem (fromIntegral addr)
+        liftEffect $ fromIntegral <<< toInt <$> Arr.unsafeAt mem (fromIntegral addr)
 
     writeMem addr v = do
         mem <- Memory ask
-        void $ liftEffect $ Arr.setUint8 mem (fromIntegral addr) (fromInt $ fromIntegral v)
+        liftEffect $ writeArray mem (fromIntegral addr) (fromInt $ fromIntegral v)
 
-runMemory :: forall m a. Memory m a -> ReaderT (DataView) m a
+runMemory :: forall m a. Memory m a -> ReaderT (ArrayView Uint8) m a
 runMemory (Memory act) = act
 
 run :: ArrayBuffer -> Effect Int
 run buf = do
-    let mem = Arr.whole buf
+    mem <- Arr.whole buf
 
     cpu <- new $ fromIntegral 0x438b
     let runCPU :: forall a. ReaderT CPU (Memory Effect) a -> Effect a

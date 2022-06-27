@@ -1,12 +1,12 @@
 export function run(buf) {
     return function() {
-        const mem = new DataView(buf);
+        const mem = new Uint8Array(buf);
         const cpu = newCPU(0x438b);
 
         const r = {
             cpu: cpu,
-            readMem: addr => mem.getUint8(addr),
-            writeMem: (addr, v) => mem.setUint8(addr, v)
+            readMem: addr => mem[addr],
+            writeMem: (addr, v) => { mem[addr] = v; }
         };
 
         for (var cnt = 0; r.cpu.pc != 0x640b; ++cnt)

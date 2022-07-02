@@ -14,8 +14,8 @@ async function measure(label, act) {
 };
 
 async function measureAll() {
-    const numRuns = 200;
-    const numWarmup = 5;
+    const numRuns = 100;
+    const numWarmup = 100;
 
     for (const [label, act] of Object.entries(implementations)) {
         for (let i = 0; i < numWarmup; ++i) {

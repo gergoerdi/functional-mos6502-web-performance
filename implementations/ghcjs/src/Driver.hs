@@ -48,9 +48,13 @@ instance (MonadIO m) => MonadMachine (Memory m) where
         mem <- ask
         liftIO $ setIndex (fromIntegral addr) (fromIntegral v) mem
 
+foreign import javascript unsafe "new Uint8Array($1)"
+    uint8Array_from_MutableArrayBuffer :: MutableArrayBuffer -> IO IOUInt8Array
+
 run :: MutableArrayBuffer -> IO Int
 run buf = do
-    arr <- fromArrayBuffer buf 0 Nothing
+    -- arr <- fromArrayBuffer buf 0 Nothing
+    arr <- uint8Array_from_MutableArrayBuffer buf
 
     cpu <- new 0x438b
     let runCPU = flip runReaderT arr . runMemory . flip runReaderT cpu
@@ -66,12 +70,12 @@ run buf = do
 foreign import javascript unsafe "ghcjs_callback_ = $1"
     set_callback :: Callback a -> IO ()
 
-returnViaArgument :: {- (FromJSVal a, ToJSVal b)  => -} (a -> IO b) -> JSVal -> JSVal -> IO ()
+returnViaArgument :: ToJSVal b => (a -> IO b) -> JSVal -> JSVal -> IO ()
 returnViaArgument f argJSVal retJSVal = do
     let retObj = unsafeCoerce retJSVal
     let arg = unsafeCoerce argJSVal
     r <- f arg
-    let rv = unsafeCoerce r -- rv <- toJSVal r
+    rv <- toJSVal r
     setProp "ret" rv retObj
 
 main = do

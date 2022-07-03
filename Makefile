@@ -1,5 +1,6 @@
 HTML_FILES	= index.html base64.js main.js
-IMPLS		= purescript/bundle.js idris2/main.js js/mos6502.js
+IMPLS		= ghcjs/main.js ghcjs/wrap.js js/mos6502.js
+# IMPLS		= purescript/bundle.js idris2/main.js js/mos6502.js
 
 .ONESHELL:
 
@@ -44,6 +45,14 @@ _build/implementations/idris2/main.js: implementations/idris2/build/exec/main.js
 	cp -f $< $@
 
 _build/implementations/js/mos6502.js: implementations/js/mos6502.js
+	mkdir -p $(dir $@)
+	cp -f $< $@
+
+_build/implementations/ghcjs/wrap.js: implementations/ghcjs/wrap.js
+	mkdir -p $(dir $@)
+	cp -f $< $@
+
+_build/implementations/ghcjs/main.js: implementations/ghcjs/dist-newstyle/build/js-ghcjs/ghcjs-8.10.7/fp-perf-mos6502-asterius-0.1.0/x/main/build/main/main.jsexe/all.js
 	mkdir -p $(dir $@)
 	cp -f $< $@
 

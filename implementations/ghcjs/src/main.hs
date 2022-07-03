@@ -2,7 +2,7 @@
 {-# LANGUAGE DerivingStrategies, GeneralizedNewtypeDeriving #-}
 module Main where
 
-import Driver
+import qualified Driver
 
 main :: IO ()
-main = return ()
+main = Driver.main

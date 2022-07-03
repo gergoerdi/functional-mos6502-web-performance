@@ -26,4 +26,5 @@ executable main
     , split
     , vector
     , ghcjs-base
+    , template-haskell
   default-language: Haskell2010

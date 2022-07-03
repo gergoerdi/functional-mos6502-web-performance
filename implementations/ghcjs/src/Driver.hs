@@ -1,18 +1,25 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DerivingStrategies, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Driver where
 
 import Hardware.MOS6502.Emu
 import Data.Coerce
+import Unsafe.Coerce
 
 import GHCJS.Marshal
 import GHCJS.Foreign.Callback
 import Data.JSString (JSString, unpack, pack)
 import GHCJS.Types
+import GHCJS.Buffer.Types
 import JavaScript.TypedArray
 import JavaScript.TypedArray.ArrayBuffer
 import JavaScript.Object
+
+import Language.Haskell.TH
+import Language.Haskell.TH.Lib
+import Data.Maybe
 
 import Data.Word
 import Control.Monad.Reader
@@ -20,7 +27,16 @@ import System.FilePath
 import Text.Printf
 
 
-newtype Memory m a = Memory{ runMemory :: ReaderT Uint8Array m a }
+-- IOUInt8Array is not exported by ghcjs-base.
+-- But it seems to be the type that has the TypedArray instance?
+-- TH to the rescue!
+type IOUInt8Array = $(do
+  TyConI (TySynD _ [] (someUInt8Array `AppT` immutable)) <- reify ''Uint8Array
+  TyConI (TySynD _ [] (_ `AppT` mutable)) <- reify ''MutableBuffer
+  pure $ someUInt8Array `AppT` mutable
+ )
+
+newtype Memory m a = Memory{ runMemory :: ReaderT IOUInt8Array m a }
     deriving newtype (Functor, Applicative, Monad, MonadIO)
 
 instance (MonadIO m) => MonadMachine (Memory m) where
@@ -50,11 +66,12 @@ run buf = do
 foreign import javascript unsafe "ghcjs_callback_ = $1"
     set_callback :: Callback a -> IO ()
 
-returnViaArgument :: (FromJSVal a, ToJSVal b) => (a -> IO b) -> JSVal -> JSVal -> IO ()
-returnViaArgument f arg retJSVal = do
-    retObj <- fromJSValUnchecked retJSVal
+returnViaArgument :: {- (FromJSVal a, ToJSVal b)  => -} (a -> IO b) -> JSVal -> JSVal -> IO ()
+returnViaArgument f argJSVal retJSVal = do
+    let retObj = unsafeCoerce retJSVal
+    let arg = unsafeCoerce argJSVal
     r <- f arg
-    rv <- toJSVal r
+    let rv = unsafeCoerce r -- rv <- toJSVal r
     setProp "ret" rv retObj
 
 main = do

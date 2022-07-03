@@ -53,6 +53,8 @@ async function setup()
         implementations["JavaScript"] = async buf => mod.run(buf)();
     }
 
+    implementations["ghcjs"] = async buf => ghcjs_run(buf);
+/*
     implementations["Idris2"] = async buf => idris2_run(buf);
 
     {
@@ -65,6 +67,7 @@ async function setup()
         const run = await mod.setup();
         implementations["GHC-Asterius"] = async buf => await run(buf);
     }
+  */
 }
 
 setup().then({});

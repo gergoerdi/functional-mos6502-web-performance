@@ -1,0 +1,29 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.7.
+--
+-- see: https://github.com/sol/hpack
+
+name:           fp-perf-mos6502-asterius
+version:        0.1.0
+category:       hardware
+license:        MIT
+build-type:     Simple
+
+executable main
+  main-is: main.hs
+  other-modules:
+      Driver
+      Hardware.MOS6502.Emu
+  hs-source-dirs:
+      src
+  build-depends:
+      base
+    , bytestring
+    , filepath
+    , lens
+    , mtl
+    , split
+    , vector
+    , ghcjs-base
+  default-language: Haskell2010

@@ -65,6 +65,11 @@ async function setup()
         const run = await mod.setup();
         implementations["GHC-Asterius"] = async buf => await run(buf);
     }
+
+    {
+        const mod = await import("../implementations/rescript/src/Main.bs.js");
+        implementations["ReScript"] = async buf => mod.main(buf);
+    }
 }
 
 setup().then({});

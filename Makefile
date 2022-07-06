@@ -1,5 +1,5 @@
 HTML_FILES	= index.html base64.js main.js
-IMPLS		= purescript/bundle.js idris2/main.js js/mos6502.js
+IMPLS		= purescript/bundle.js idris2/main.js js/mos6502.js rescript/Main.bs.js
 
 .ONESHELL:
 
@@ -60,5 +60,13 @@ implementations/asterius/_build/Driver.wasm:
 
 
 _build/Driver.wasm: implementations/asterius/_build/Driver.wasm
+	mkdir -p $(dir $@)
+	cp -f $< $@
+
+implementations/rescript/src/Main.bs.js: $(wildcard implementations/rescript/src/*.re*)
+	cd implementations/rescript
+	npm run build
+
+_build/implementations/rescript/Main.bs.js: implementations/rescript/src/Main.bs.js
 	mkdir -p $(dir $@)
 	cp -f $< $@

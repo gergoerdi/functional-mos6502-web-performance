@@ -21,5 +21,5 @@ let main = buf => {
     }
   }
 
-  let _ = run(0)
+  run(0)
 }

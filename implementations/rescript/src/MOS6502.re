@@ -83,7 +83,7 @@ module CPU = (Machine: Machine, Init: Initialize) => {
 
   exception UnkownOpcode(byte);
   
-  let step = () => { // http://www.6502.org/tutorials/6502opcodes.html
+  let step = () => {
     let byVal = (addressing, op) => op(readMem(addressing()))
     let byRef = (addressing, op) => op(addressing())
     let inplace = (addressing, op) => {
@@ -128,14 +128,14 @@ module CPU = (Machine: Machine, Init: Initialize) => {
     
     let alu = f => v => updateFlags(f(v))
     
-    let signed = (f : (int, int,bool) => int) => (v1, v2) => {
+    let signed = (f : (int, int, bool) => int) => (v1, v2) => {
       let v1' = int_of_int8(v1)
       let v2' = int_of_int8(v2)
       
       let c0 = getFlag(carry)
       let result = f(v1', v2', c0)
       if (Pervasives.((result land 0x80) != (v1' land v2') land 0x80)) { setFlag(overflow, true) }
-      setFlag(carry, result >= 0x100)
+      setFlag(carry, result >= 0x100 || result < 0)
       updateFlags(int8_of_int(result))
     }
 
@@ -190,7 +190,7 @@ module CPU = (Machine: Machine, Init: Initialize) => {
     let dec = alu(fun (v) => v - int8_of_int(1))
     let inc = alu(fun (v) => v + int8_of_int(1))
 
-    let _ = switch(int_of_int8(fetch())) {
+    let _ = switch(int_of_int8(fetch())) { // http://www.6502.org/tutorials/6502opcodes.html
       | 0x69 => imm(adc);
       | 0x65 => byVal(zp, adc)
       | 0x75 => byVal(zpX, adc);

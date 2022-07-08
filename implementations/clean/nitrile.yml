@@ -1,0 +1,24 @@
+name: mos6502
+description: A MOS 6502 interpreter.
+type: Application
+version: 0.1.0
+license: Unlicense
+url: ''
+maintainer: Camil Staps
+contact_email: clean@camilstaps.nl
+
+dependencies:
+  abc-interpreter: ^1.0
+  base: ^1.0
+  clean-platform: ^0.3
+
+src:
+  - src
+
+build:
+  main:
+    script:
+      - clm:
+          main: mos6502
+          target: src/mos6502
+          bytecode: prelinked

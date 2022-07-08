@@ -1,5 +1,9 @@
 let implementations = {};
 
+function printOut(s) {
+    console.log(s);
+}
+
 async function measure(label, act) {
     const buf = files["data/program.dat"].slice();
 
@@ -9,7 +13,7 @@ async function measure(label, act) {
     if (cnt != 4142) throw { label: label, cnt: cnt };
 
     const time = after - before;
-    // console.log(label + ": " + cnt + " cycles done in " + time + "ms");
+    // printOut(label + ": " + cnt + " cycles done in " + time + "ms");
     return time;
 };
 
@@ -25,7 +29,7 @@ async function measureAll() {
         let times = [];
         for (let i = 0; i < numRuns; ++i) {
             if (i % 20 == 0) {
-                console.log("Running " + label + "...");
+                printOut("Running " + label + "...");
             }
             times.push(await measure(label, act));
         }
@@ -39,10 +43,10 @@ async function measureAll() {
 
         const avgTime = sumTime / numRuns;
 
-        console.log(label + ":" +
-                    " min: " + minTime + "ms" +
-                    " max: " + maxTime + "ms" +
-                    " avg: " + avgTime + "ms");
+        printOut(label + ":" +
+                 " min: " + minTime + "ms" +
+                 " max: " + maxTime + "ms" +
+                 " avg: " + avgTime + "ms");
     }
 }
 

@@ -6,11 +6,11 @@ let clean_promise = (() => {
     };
 
     return ABCInterpreter.instantiate({
-        bytecode_path: '/implementations/clean/mos6502.pbc',
+        bytecode_path: './implementations/clean/mos6502.pbc',
 
         fetch: (p) => {
             if (p.indexOf('/js')==0)
-                p='/implementations/clean'+p;
+                p='./implementations/clean'+p;
             return fetch(p);
         },
 

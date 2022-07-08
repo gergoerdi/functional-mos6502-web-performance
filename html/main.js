@@ -78,8 +78,10 @@ async function setup()
         implementations["ReScript"] = async buf => mod.main(buf);
     }
 
-    await clean_promise;
-    implementations["Clean"] = async buf => clean_run(buf);
+    {
+        await clean_promise;
+        implementations["Clean"] = async buf => clean_run(buf);
+    }
 }
 
 setup().then({});

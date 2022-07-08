@@ -2,6 +2,9 @@ let implementations = {};
 
 function printOut(s) {
     console.log(s);
+
+    const pre = document.getElementById("out");
+    pre.appendChild(document.createTextNode(s + "\n"));
 }
 
 async function measure(label, act) {

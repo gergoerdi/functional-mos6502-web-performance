@@ -1,5 +1,5 @@
 HTML_FILES	= index.html base64.js main.js
-IMPLS		= purescript/bundle.js idris2/main.js js/mos6502.js rescript/Main.bs.js
+IMPLS		= purescript/bundle.js idris2/main.js js/mos6502.js rescript/Main.bs.js clean
 
 .ONESHELL:
 
@@ -70,3 +70,21 @@ implementations/rescript/src/Main.bs.js: $(wildcard implementations/rescript/src
 _build/implementations/rescript/Main.bs.js: implementations/rescript/src/Main.bs.js
 	mkdir -p $(dir $@)
 	cp -f $< $@
+
+implementations/clean/src/mos6502.pbc:
+	cd implementations/clean
+	nitrile build
+
+_build/implementations/clean/mos6502.js: implementations/clean/src/mos6502.js
+	mkdir -p $(dir $@)
+	cp -f $< $@
+
+_build/implementations/clean/mos6502.pbc: implementations/clean/src/mos6502.pbc
+	mkdir -p $(dir $@)
+	cp -f $< $@
+
+_build/implementations/clean/js: $(wildcard implementations/clean/nitrile-packages/linux-x64/abc-interpreter/lib/WebPublic/js/*)
+	mkdir -p $@
+	cp -f $^ $@
+
+_build/implementations/clean: _build/implementations/clean/mos6502.js _build/implementations/clean/mos6502.pbc _build/implementations/clean/js

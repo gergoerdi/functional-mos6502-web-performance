@@ -70,6 +70,9 @@ async function setup()
         const mod = await import("../implementations/rescript/src/Main.bs.js");
         implementations["ReScript"] = async buf => mod.main(buf);
     }
+
+    await clean_promise;
+    implementations["Clean"] = async buf => clean_run(buf);
 }
 
 setup().then({});

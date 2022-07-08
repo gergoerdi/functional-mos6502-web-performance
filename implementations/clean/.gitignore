@@ -1,0 +1,8 @@
+*.abc
+*.bc
+*.o
+*.pbc
+
+src/mos6502
+
+nitrile-packages/

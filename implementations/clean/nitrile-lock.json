@@ -1,0 +1,26 @@
+{"packages":{"linux-x64":[{"name":"abc-interpreter"
+                          ,"version":"1.0.0"}
+                         ,{"name":"argenv"
+                          ,"version":"1.0.1"}
+                         ,{"name":"base"
+                          ,"version":"1.0.0"}
+                         ,{"name":"base-clm"
+                          ,"version":"1.4.2"}
+                         ,{"name":"base-code-generator"
+                          ,"version":"1.0.0"}
+                         ,{"name":"base-compiler"
+                          ,"version":"2.0.1"}
+                         ,{"name":"base-compiler-itasks"
+                          ,"version":"2.0.1"}
+                         ,{"name":"base-rts"
+                          ,"version":"1.1.0"}
+                         ,{"name":"base-stdenv"
+                          ,"version":"1.0.0"}
+                         ,{"name":"clean-platform"
+                          ,"version":"0.3.4"}
+                         ,{"name":"graph-copy"
+                          ,"version":"2.0.1"}
+                         ,{"name":"lib-compiler-itasks"
+                          ,"version":"2.0.1"}
+                         ,{"name":"tcpip"
+                          ,"version":"2.0.1"}]}}

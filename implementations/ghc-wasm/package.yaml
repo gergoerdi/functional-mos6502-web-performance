@@ -1,0 +1,20 @@
+name: fp-perf-mos6502-ghc-wasm
+version: 0.1.0
+category: hardware
+license: MIT
+
+dependencies:
+  - base
+  - lens
+  - mtl
+  - vector
+  - bytestring
+  - filepath
+  - split
+
+source-dirs:
+  - src
+
+executables:
+  main:
+    main: main.hs
